@@ -6,8 +6,8 @@ import Tetris from '../tetris'
 
 const Box = styled.div`
   background: ${props => props.active ? 'grey' : 'white'};
-  width: 5%;
-  height: 5%;
+  width: 20px;
+  height: 20px;
   border: 0.5px solid #fff;
   box-sizing: border-box;
   flex-grow: 1;
@@ -18,17 +18,29 @@ const CenterPanel = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 400px;
-  height: 400px;
+  width: 200px;
+  height: 500px;
   display: flex;
   flex-wrap: wrap;
-  border: 1px solid #000;
+  border: 1px solid gray;
+`
+
+const BlockDiv = styled.div`
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 200px;
+  height: 100px;
+  border: 1px solid #fff;
+  z-index: 1;
+  background: #fff;
 `
 
 class App extends Component {
   constructor(props) {
     super(props)
     this.tetris = new Tetris()
+    window.tetris = this.tetris
     this.state = {
       boxes: this.tetris.state
     }
@@ -55,6 +67,8 @@ class App extends Component {
       this.tetris.canMove('down') ? this.tetris.move('down') : ''
     } else if (key === 'd') {
       this.tetris.canMove('right') ? this.tetris.move('right') : ''
+    } else if (key === ' ') {
+      this.tetris.transformShape()
     }
   }
   render() {
@@ -63,8 +77,10 @@ class App extends Component {
         return <Box active={v} key={`${r}-${c}`} />
       })
     }))
+    let block = <BlockDiv />
     return (
       <CenterPanel>
+        {block}
         {boxes}
       </CenterPanel>
     )

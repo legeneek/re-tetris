@@ -5,7 +5,7 @@ export const flatArray = function (arr) {
     for (let i = 0, len = arr.length; i < len; ++i) {
       res = res.concat(flatArray(arr[i]))
     }
-  } else {
+  } else if (arr != null) {
     res = res.concat(arr)
   }
 
