@@ -5,7 +5,7 @@ import { flatArray } from '../public/utils'
 import Tetris from '../tetris'
 
 const Box = styled.div`
-  background: ${props => props.active ? 'grey' : 'white'};
+  background: ${props => props.active ? 'white' : 'white'};
   width: 20px;
   height: 20px;
   border: 0.5px solid #fff;
@@ -22,7 +22,7 @@ const CenterPanel = styled.div`
   height: 500px;
   display: flex;
   flex-wrap: wrap;
-  border: 1px solid gray;
+  border: 1px solid white;
 `
 
 const BlockDiv = styled.div`

@@ -1,4 +1,5 @@
 import { flatArray } from './public/utils'
+import Shape from './shape'
 
 const boxState = {
   filled: 1,
@@ -6,6 +7,9 @@ const boxState = {
 }
 const rowLen = 25
 const colLen = 10
+const mid = Math.floor((colLen - 1) / 2)
+const buffer = 5
+const shape = new Shape(mid, buffer)
 const interval = 800
 let fullLine = ''
 
@@ -89,7 +93,6 @@ export default class Tetris {
     this.resume()
   }
   pause() {
-    clearTimeout(this.timer)
     this.paused = true
   }
   resume() {
@@ -183,39 +186,34 @@ export default class Tetris {
     this.emit('state')
   }
   getNextShape() {
-    return [
-      [
-        {x: 4, y: 3}
-      ],
-      [
-        { x: 4, y: 4 },
-        { x: 5, y: 4 }
-      ]
-    ]
+    return shape.getRandomShape()
   }
   transformShape() {
-    const row = col = Math.max.apply(null, 
-      this._activeShape.map((arr) => { 
-        return arr.length 
-      }).concat(this._activeShape.length))
-
+    if (!this._activeShape) {
+      return
+    }
+    
+    let len = this._activeShape.matrixLen
+    
     // init with null
     let res = []
-    for (let i = 0; i < row; ++i) {
+    let p
+    for (let i = 0; i < len; ++i) {
       let r = []
-      for (let j = 0; j < col; ++j) {
+      for (let j = 0; j < len; ++j) {
         r.push(null)
       }
       res.push(r)
     }
 
-    for (let m = 0; m < row; ++m) {
-      for (let n = 0; n < col; ++n) {
-        let p = matrix[m][n]
-        if (p) {
-          p.x += col - 1 - m - n
+    for (let m = 0; m < len; ++m) {
+      for (let n = 0; n < len; ++n) {
+        let dot = this._activeShape[m] ? this._activeShape[m][n] : null
+        if (dot) {
+          p = Object.assign({}, dot)
+          p.x += len - 1 - m - n
           p.y += n - m
-          res[n][col - 1 - m] = p
+          res[n][len - 1 - m] = p
         }
       }
     }
@@ -232,20 +230,20 @@ export default class Tetris {
     this.emit('state')
   }
   cleanShape (s) {
-    for (i = 0, len = s.length; i < len; ++i) {
-      dot = s[i]
-      this.state[dot.y][dot.x] === boxState.empty
+    for (let i = 0, len = s.length; i < len; ++i) {
+      let dot = s[i]
+      this.state[dot.y][dot.x] = boxState.empty
     }
   }
   drawShape (s) {
-    for (i = 0, len = s.length; i < len; ++i) {
-      dot = s[i]
-      this.state[dot.y][dot.x] === boxState.filled
+    for (let i = 0, len = s.length; i < len; ++i) {
+      let dot = s[i]
+      this.state[dot.y][dot.x] = boxState.filled
     }
   }
   canDrawShape(s) {
-    for (i = 0, len = s.length; i < len; ++i) {
-      dot = s[i]
+    for (let i = 0, len = s.length; i < len; ++i) {
+      let dot = s[i]
       if (this.state[dot.y][dot.x] === boxState.filled) {
         return false
       }
