@@ -17,6 +17,16 @@ for (let i = 0; i < colLen; ++i) {
   fullLine += boxState.filled
 }
 
+function cloneMetrix(s) {
+  let res = []
+  s.map((a) => {
+    res.push(a.map((b) => {
+      return b ? Object.assign({}, b) : b
+    }))
+  })
+  return res
+}
+
 export default class Tetris {
   constructor() {
     let arr = []
@@ -33,6 +43,7 @@ export default class Tetris {
     this._activeShape = null
     this.paused = false
     this.stoped = false
+    this.newShape = true
   }
   get activeShape() {
     const s = flatArray(this._activeShape)
@@ -50,15 +61,14 @@ export default class Tetris {
         return
       }
 
-      if (me.activeShape) {
-        if (!me.canMove('down')) {
-          me.checkLines()
-          me.addShape()
-        } else {
-          me.move('down')
-        }
-      } else {
+      if (me.newShape) {
+        me.newShape = false
         me.addShape()
+      } else {
+        if (!me.move('down')) {
+          me.checkLines()
+          me.newShape = true
+        }
       }
     }
     loop()
@@ -78,15 +88,13 @@ export default class Tetris {
         // remove this line
         this.state.splice(y, 1)
         //the offset of next y
-        offset = 1
+        offset += 1
         // add new line
         let newLine = []
         for (let j = 0; j < colLen; ++j) {
           newLine.push(boxState.empty)
         }
         this.state.unshift(newLine)
-      } else {
-        offset = 0
       }
     }
     this.emit('state')
@@ -103,87 +111,38 @@ export default class Tetris {
     this.emit('over')
     clearTimeout(this.timer)
   }
-  canMove(dir) {
-    if (this.paused || this.stoped || !this.activeShape) {
-      return false
-    }
-
-    if (dir === 'down') {
-      let dot = this.activeShape[this.activeShape.length - 1]
-
-      if (dot.y + 1 > rowLen - 1) {
-        return false
-      }
-
-      let lastRow = this.activeShape.filter((b) => {
-        return b.y === dot.y
-      })
-      for (let i = 0, len = lastRow.length; i < len; ++i) {
-        let d = lastRow[i]
-        if (this.state[d.y + 1][d.x] === boxState.filled) {
-          return false
-        }
-      }
-    } else if (dir === 'left') {
-      let dot = this.activeShape[0]
-
-      if (dot.x - 1 < 0) {
-        return false
-      }
-
-      let leftCol = this.activeShape.filter((b) => {
-        return b.x === dot.x
-      })
-      for (let j = 0; j < leftCol.length; ++j) {
-        let d = leftCol[j]
-        if (this.state[d.y][d.x - 1] === boxState.filled) {
-          return false
-        }
-      }
-    } else if (dir === 'right') {
-      let dot = this.activeShape[this.activeShape.length - 1]
-
-      if (dot.x + 1 > colLen - 1) {
-        return false
-      }
-
-      let rightCol = this.activeShape.filter((b) => {
-        return b.x === dot.x
-      })
-      for (let m = 0; m < rightCol.length; ++m) {
-        let d = rightCol[m]
-        if (this.state[d.y][d.x + 1] === boxState.filled) {
-          return false
-        }
-      }
-    }
-
-    return true
-  }
   move(dir) {
+    let moved = false
     this.cleanShape(this.activeShape)
+    let cloneShape = cloneMetrix(this._activeShape)
 
     if (dir === 'down') {
       for (let j = 0; j < this.activeShape.length; ++j) {
         let dot = this.activeShape[j]
         dot.y += 1
-        this.state[dot.y][dot.x] = boxState.filled
       }
     } else if (dir === 'left') {
       for (let m = 0; m < this.activeShape.length; ++m) {
         let dot = this.activeShape[m]
         dot.x -= 1
-        this.state[dot.y][dot.x] = boxState.filled
       }
     } else if (dir === 'right') {
       for (let n = 0; n < this.activeShape.length; ++n) {
         let dot = this.activeShape[n]
         dot.x += 1
-        this.state[dot.y][dot.x] = boxState.filled
       }
     }
 
+    if (this.canDrawShape(this.activeShape)) {
+      moved = true
+    } else {
+      this.activeShape = cloneShape
+    }
+    this.drawShape(this.activeShape)
+
     this.emit('state')
+
+    return moved
   }
   getNextShape() {
     return shape.getRandomShape()
@@ -193,7 +152,7 @@ export default class Tetris {
       return
     }
     
-    let len = this._activeShape.matrixLen
+    let len = this._activeShape.length
     
     // init with null
     let res = []
@@ -244,7 +203,8 @@ export default class Tetris {
   canDrawShape(s) {
     for (let i = 0, len = s.length; i < len; ++i) {
       let dot = s[i]
-      if (this.state[dot.y][dot.x] === boxState.filled) {
+      if (dot.y >= rowLen || dot.y < 0 || dot.x >= colLen || dot.x < 0 || 
+        this.state[dot.y][dot.x] === boxState.filled) {
         return false
       }
     }

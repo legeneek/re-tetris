@@ -5,7 +5,7 @@ import { flatArray } from '../public/utils'
 import Tetris from '../tetris'
 
 const Box = styled.div`
-  background: ${props => props.active ? 'white' : 'white'};
+  background: ${props => props.active ? 'gray' : 'white'};
   width: 20px;
   height: 20px;
   border: 0.5px solid #fff;
@@ -22,7 +22,7 @@ const CenterPanel = styled.div`
   height: 500px;
   display: flex;
   flex-wrap: wrap;
-  border: 1px solid white;
+  border: 1px solid gray;
 `
 
 const BlockDiv = styled.div`
@@ -62,11 +62,11 @@ class App extends Component {
   }
   handleKeydown (key) {
     if (key === 'a') {
-      this.tetris.canMove('left') ? this.tetris.move('left') : ''
+      this.tetris.move('left')
     } else if (key === 's') {
-      this.tetris.canMove('down') ? this.tetris.move('down') : ''
+      this.tetris.move('down')
     } else if (key === 'd') {
-      this.tetris.canMove('right') ? this.tetris.move('right') : ''
+      this.tetris.move('right')
     } else if (key === ' ') {
       this.tetris.transformShape()
     }
