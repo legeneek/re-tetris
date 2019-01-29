@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import styled from 'styled-components'
 
 import { flatArray } from '../public/utils'
-import Tetris from '../tetris'
 
 const Box = styled.div`
   background: ${props => props.active ? 'gray' : 'white'};
@@ -39,12 +38,11 @@ const BlockDiv = styled.div`
 class App extends Component {
   constructor(props) {
     super(props)
-    this.tetris = new Tetris()
-    window.tetris = this.tetris
     this.state = {
-      boxes: this.tetris.state
+      boxes: []
     }
     this.handleKeydown = this.handleKeydown.bind(this)
+    this.worker = new Worker('./worker.js')
   }
   componentDidMount() {
     const me = this
@@ -52,23 +50,31 @@ class App extends Component {
     window.addEventListener('keydown', (e) => {
       me.handleKeydown(e.key)
     })
-
-    this.tetris.on('state', function() {
-      me.setState((s) => {
-        return me.tetris.state
-      })
+    
+    this.worker.addEventListener('message', (e) => {
+      let d = e.data
+      console.log('receive: ', d)
+      if (d.type === 'state') {
+        me.setState((s) => {
+          return {
+            boxes: JSON.parse(d.data)
+          }
+        })
+      }
+      
     })
-    this.tetris.start()
+
+    this.worker.postMessage({cmd: 'start'})
   }
   handleKeydown (key) {
     if (key === 'a') {
-      this.tetris.move('left')
+      this.worker.postMessage({cmd: 'move', data: 'left'})
     } else if (key === 's') {
-      this.tetris.move('down')
+      this.worker.postMessage({cmd: 'move', data: 'down'})
     } else if (key === 'd') {
-      this.tetris.move('right')
+      this.worker.postMessage({cmd: 'move', data: 'right'})
     } else if (key === ' ') {
-      this.tetris.transformShape()
+      this.worker.postMessage({cmd: 'tranform'})
     }
   }
   render() {
