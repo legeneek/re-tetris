@@ -17,7 +17,7 @@ const CenterPanel = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 200px;
+  width: 300px;
   height: 500px;
   display: flex;
   flex-wrap: wrap;
@@ -28,7 +28,7 @@ const BlockDiv = styled.div`
   position: absolute;
   top: -1px;
   left: -1px;
-  width: 200px;
+  width: 100%;
   height: 100px;
   border: 1px solid #fff;
   z-index: 1;

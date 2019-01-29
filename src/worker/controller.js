@@ -3,7 +3,7 @@ const boxState = {
   empty: 0
 }
 const rowLen = 25
-const colLen = 10
+const colLen = 15
 const mid = Math.floor((colLen - 1) / 2)
 const buffer = 5
 const interval = 800
@@ -233,6 +233,10 @@ class Tetris {
     clearTimeout(this.timer)
   }
   move(dir) {
+    if (this.paused || this.stoped || !this.activeShape) {
+      return
+    }
+
     let moved = false
     this.cleanShape(this.activeShape)
     let cloneShape = cloneMetrix(this._activeShape)
