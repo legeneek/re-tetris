@@ -41,8 +41,8 @@ class App extends Component {
     this.state = {
       boxes: []
     }
+    this.worker = new Worker('./static/controller.js')
     this.handleKeydown = this.handleKeydown.bind(this)
-    this.worker = new Worker('./worker.js')
   }
   componentDidMount() {
     const me = this
@@ -74,7 +74,7 @@ class App extends Component {
     } else if (key === 'd') {
       this.worker.postMessage({cmd: 'move', data: 'right'})
     } else if (key === ' ') {
-      this.worker.postMessage({cmd: 'tranform'})
+      this.worker.postMessage({cmd: 'transform'})
     }
   }
   render() {

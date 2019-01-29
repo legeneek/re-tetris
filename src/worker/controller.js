@@ -1,6 +1,3 @@
-import { flatArray } from './public/utils'
-import Shape from './shape'
-
 const boxState = {
   filled: 1,
   empty: 0
@@ -9,7 +6,6 @@ const rowLen = 25
 const colLen = 10
 const mid = Math.floor((colLen - 1) / 2)
 const buffer = 5
-const shape = new Shape(mid, buffer)
 const interval = 800
 let fullLine = ''
 
@@ -27,7 +23,134 @@ function cloneMetrix(s) {
   return res
 }
 
-export default class Tetris {
+function flatArray(arr) {
+  let res = []
+
+  if (Array.isArray(arr)) {
+    for (let i = 0, len = arr.length; i < len; ++i) {
+      res = res.concat(flatArray(arr[i]))
+    }
+  } else if (arr != null) {
+    res = res.concat(arr)
+  }
+
+  return res
+}
+
+class Shape {
+  constructor(mid, buffer) {
+    this.shapes = [
+      () => [
+        [
+          null,
+          {x: mid, y: buffer - 3},
+          null
+        ],
+        [
+          null,
+          { x: mid, y: buffer - 2},
+          { x: mid + 1, y: buffer - 2}
+        ],
+        [
+          null, {x: mid, y: buffer -1}, null
+        ]
+      ],
+      () => [
+        [
+          null,
+          {x: mid, y: buffer - 3},
+          {x: mid + 1, y: buffer -3}
+        ],
+        [
+          {x: mid - 1, y: buffer -2 },
+          { x: mid, y: buffer - 2}
+        ],
+        [null, null, null]
+      ],
+      () => [
+        [
+          null,
+          {x: mid, y: buffer - 3},
+          {x: mid + 1, y: buffer -3}
+        ],
+        [
+          {x: mid - 1, y: buffer -2 },
+          { x: mid, y: buffer - 2}
+        ],
+        [null, null, null]
+      ],
+      () => [
+        [
+          {x: mid - 1, y: buffer - 2},
+          {x: mid, y: buffer - 2},
+        ],
+        [
+          { x: mid - 1 , y: buffer - 1},
+          { x: mid, y: buffer - 1 }
+        ]
+      ],
+      () => [
+        [
+          null,
+          null,
+          {x: mid, y: buffer - 5},
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          {x: mid, y: buffer - 4},
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          {x: mid, y: buffer - 3},
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          {x: mid, y: buffer - 2},
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          {x: mid, y: buffer - 1},
+          null,
+          null
+        ]
+      ],
+      () => [
+        [
+          {x: mid, y: buffer - 3},
+          null,
+          null
+        ],
+        [
+          {x: mid, y: buffer - 2},
+          null,
+          null
+        ],
+        [
+          {x: mid, y: buffer - 1},
+          {x: mid + 1, y: buffer - 1},
+          null
+        ]
+      ]
+    ]
+  }
+  getRandomShape() {
+    return this.shapes[Math.floor(this.shapes.length * Math.random())]()
+  }
+}
+
+class Tetris {
   constructor() {
     let arr = []
     for (let i = 0; i < rowLen; ++i) {
@@ -37,6 +160,7 @@ export default class Tetris {
       }
       arr.push(col)
     }
+    this.shape = new Shape(mid, buffer)
     this.state = arr
     this.timer = null
     this.handlers = {}
@@ -142,7 +266,7 @@ export default class Tetris {
     return moved
   }
   getNextShape() {
-    return shape.getRandomShape()
+    return this.shape.getRandomShape()
   }
   transformShape() {
     if (!this._activeShape) {
@@ -216,28 +340,27 @@ export default class Tetris {
     this.drawShape(this.activeShape)
     this.emit('state')
   }
-  on(type, cb) {
-    if (!this.handlers[type]) {
-      this.handlers[type] = []
-    }
-    if (typeof cb === 'function') {
-      this.handlers[type].push(cb)
-    }
-  }
-  off(type, cb) {
-    if (Array.isArray(this.handlers[type])) {
-      const i = this.handlers[type].indexOf(cb)
-      if (i !== -1) {
-        this.handlers[type].splice(i, 1)
-      }
-    }
-  }
-  emit(type) {
-    const cbs = this.handlers[type]
-    if (Array.isArray(cbs)) {
-      for (let i = 0, len = cbs.length; i < len; ++i) {
-        cbs[i]()
-      }
+  emit(msg) {
+    if (msg === 'state') {
+      self.postMessage({type: 'state', data: JSON.stringify(this.state)})
     }
   }
 }
+
+const tetris = new Tetris()
+
+self.addEventListener('message', (e) => {
+  let d = e.data
+  console.log(d)
+  if (d.cmd === 'start') {
+    tetris.start()
+  } else if (d.cmd === 'pause') {
+    tetris.pause()
+  } else if (d.cmd === 'resume') {
+    tetris.resume()
+  } else if (d.cmd === 'move') {
+    tetris.move(d.data)
+  } else if (d.cmd === 'transform') {
+    tetris.transformShape()
+  }
+})

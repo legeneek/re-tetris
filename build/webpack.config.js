@@ -36,7 +36,7 @@ module.exports = {
       template: './src/index.html',
       inject: true
     }),
-    new CopyWebpackPlugin([path.resolve(__dirname, '../src/worker/worker.js')])
+    new CopyWebpackPlugin([path.resolve(__dirname, '../src/worker/controller.js')])
   ],
   devtool: 'source-map',
   devServer: {
