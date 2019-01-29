@@ -64,11 +64,11 @@ export default class Tetris {
       if (me.newShape) {
         me.newShape = false
         me.addShape()
-      } else {
-        if (!me.move('down')) {
-          me.checkLines()
-          me.newShape = true
-        }
+      }
+      
+      if (!me.move('down')) {
+        me.checkLines()
+        me.newShape = true
       }
     }
     loop()
@@ -80,15 +80,12 @@ export default class Tetris {
     this.activeShape.map((d) => {
       return o[d.y] = 1
     })
-    let offset = 0
-    let arr = Object.keys(o)
+    let arr = Object.keys(o).sort()
     for (let i = 0, l = arr.length; i < l; ++i) {
-      let y = +arr[i] + offset
+      let y = +arr[i]
       if (this.state[y].join('') === fullLine) {
         // remove this line
         this.state.splice(y, 1)
-        //the offset of next y
-        offset += 1
         // add new line
         let newLine = []
         for (let j = 0; j < colLen; ++j) {
