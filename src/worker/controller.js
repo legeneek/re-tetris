@@ -4,7 +4,6 @@ const boxState = {
 }
 const rowLen = 25
 const colLen = 15
-const mid = Math.floor((colLen - 1) / 2)
 const buffer = 5
 const interval = 800
 let fullLine = ''
@@ -38,115 +37,66 @@ function flatArray(arr) {
 }
 
 class Shape {
-  constructor(mid, buffer) {
+  constructor() {
     this.shapes = [
       () => [
-        [
-          null,
-          {x: mid, y: buffer - 3},
-          null
-        ],
-        [
-          null,
-          { x: mid, y: buffer - 2},
-          { x: mid + 1, y: buffer - 2}
-        ],
-        [
-          null, {x: mid, y: buffer -1}, null
-        ]
+        [null, 1, null],
+        [null, 1, 1],
+        [null, 1, null]
       ],
       () => [
-        [
-          null,
-          {x: mid, y: buffer - 3},
-          {x: mid + 1, y: buffer -3}
-        ],
-        [
-          {x: mid - 1, y: buffer -2 },
-          { x: mid, y: buffer - 2}
-        ],
+        [null, 1, 1],
+        [1, 1, null],
         [null, null, null]
       ],
       () => [
-        [
-          null,
-          {x: mid, y: buffer - 3},
-          {x: mid + 1, y: buffer -3}
-        ],
-        [
-          {x: mid - 1, y: buffer -2 },
-          { x: mid, y: buffer - 2}
-        ],
+        [1, 1, null],
+        [null, 1, 1],
         [null, null, null]
       ],
       () => [
-        [
-          {x: mid - 1, y: buffer - 2},
-          {x: mid, y: buffer - 2},
-        ],
-        [
-          { x: mid - 1 , y: buffer - 1},
-          { x: mid, y: buffer - 1 }
-        ]
+        [1, 1],
+        [1, 1]
       ],
       () => [
-        [
-          null,
-          null,
-          {x: mid, y: buffer - 5},
-          null,
-          null
-        ],
-        [
-          null,
-          null,
-          {x: mid, y: buffer - 4},
-          null,
-          null
-        ],
-        [
-          null,
-          null,
-          {x: mid, y: buffer - 3},
-          null,
-          null
-        ],
-        [
-          null,
-          null,
-          {x: mid, y: buffer - 2},
-          null,
-          null
-        ],
-        [
-          null,
-          null,
-          {x: mid, y: buffer - 1},
-          null,
-          null
-        ]
+        [null, null, 1, null, null],
+        [null, null, 1, null, null],
+        [null, null, 1, null, null],
+        [null, null, 1, null, null],
+        [null, null, 1, null, null]
       ],
       () => [
-        [
-          {x: mid, y: buffer - 3},
-          null,
-          null
-        ],
-        [
-          {x: mid, y: buffer - 2},
-          null,
-          null
-        ],
-        [
-          {x: mid, y: buffer - 1},
-          {x: mid + 1, y: buffer - 1},
-          null
-        ]
+        [1, null, null],
+        [1, null, null],
+        [1, 1, null]
+      ],
+      () => [
+        [null, 1, null],
+        [null, 1, null],
+        [1, 1, null]
       ]
     ]
   }
+  stateToPoint(matrix) {
+    const l = matrix.length
+    let startX = Math.floor((colLen - l) / 2)
+    let startY = buffer - l
+    for (let i = 0; i < l; ++i) {
+      for (let j = 0; j < l; ++j) {
+        if (matrix[i][j] === boxState.filled) {
+          matrix[i][j] = {
+            x: startX + j,
+            y: startY + i
+          }
+        }
+      }
+    }
+    return matrix
+  }
   getRandomShape() {
-    return this.shapes[Math.floor(this.shapes.length * Math.random())]()
+    return this.stateToPoint(
+      this.shapes[Math.floor(this.shapes.length * Math.random())]()
+      )
   }
 }
 
@@ -160,7 +110,7 @@ class Tetris {
       }
       arr.push(col)
     }
-    this.shape = new Shape(mid, buffer)
+    this.shape = new Shape()
     this.state = arr
     this.timer = null
     this.handlers = {}
@@ -193,13 +143,13 @@ class Tetris {
       if (!me.move('down')) {
         me.checkLines()
         me.newShape = true
+        me.activeShape = null
       }
     }
     loop()
   }
   checkLines() {
     this.pause()
-    // check full filled line
     let o = {}
     this.activeShape.map((d) => {
       return o[d.y] = 1
@@ -208,9 +158,7 @@ class Tetris {
     for (let i = 0, l = arr.length; i < l; ++i) {
       let y = +arr[i]
       if (this.state[y].join('') === fullLine) {
-        // remove this line
         this.state.splice(y, 1)
-        // add new line
         let newLine = []
         for (let j = 0; j < colLen; ++j) {
           newLine.push(boxState.empty)
@@ -278,8 +226,6 @@ class Tetris {
     }
     
     let len = this._activeShape.length
-    
-    // init with null
     let res = []
     let p
     for (let i = 0; i < len; ++i) {
@@ -355,7 +301,6 @@ const tetris = new Tetris()
 
 self.addEventListener('message', (e) => {
   let d = e.data
-  console.log(d)
   if (d.cmd === 'start') {
     tetris.start()
   } else if (d.cmd === 'pause') {

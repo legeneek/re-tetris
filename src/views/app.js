@@ -53,7 +53,6 @@ class App extends Component {
     
     this.worker.addEventListener('message', (e) => {
       let d = e.data
-      console.log('receive: ', d)
       if (d.type === 'state') {
         me.setState((s) => {
           return {
@@ -61,7 +60,6 @@ class App extends Component {
           }
         })
       }
-      
     })
 
     this.worker.postMessage({cmd: 'start'})
