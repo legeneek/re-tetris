@@ -2,6 +2,5 @@
 yet anthor tetris, use react and web worker
 
 # have fan
-```
-npm run start:dev
-```
+
+[online play](https://legeneek.github.io/tetris/index.html)
